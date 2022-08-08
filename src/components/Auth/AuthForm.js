@@ -19,35 +19,46 @@ const AuthForm = () => {
     const enteredPassword = passwordRef.current.value;
 
     setIsLoading(true);
+    let url;
     if(isLogin) {
+      url = process.env.REACT_APP_FIREBASE_SIGNIN
+      console.log('login', url);
     } else {
-      fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyBlpkclnLdmxNpeYE_mQwnJMkzUCsQ5H6A',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            email: enteredEmail,
-            password: enteredPassword,
-            returnSecureToken: true
-          }),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }).then(res => {
-          if(res.ok) {
-
-          } else {
-            setIsLoading(false);
-            return res.json().then((data) => {
-              console.log(data);
-              let errorMessage = 'Authentication Failed!';
-              if (data & data.error & data.error.message) {
-                errorMessage = data.error.message;
-              }
-              alert(errorMessage);
-            })
-          }
-        })
+      url = process.env.REACT_APP_FIREBASE_SIGNUP
     }
+    fetch(url,
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          email: enteredEmail,
+          password: enteredPassword,
+          returnSecureToken: true
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    ).then(res => {
+        if(res.ok) {
+          return res.json();
+        } else {
+          setIsLoading(false);
+          return res.json().then((data) => {
+            console.log(data);
+            let errorMessage = 'Authentication Failed!';
+            // if (data & data.error & data.error.message) {
+            //   errorMessage = data.error.message;
+            // }
+            
+            throw new Error(errorMessage);
+          });
+        }
+      }
+    ).then(data => {
+      console.log(data);
+    }).catch(error => {
+      alert(error.message);
+    })
   }
 
   return (
